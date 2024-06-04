@@ -5,7 +5,7 @@ BasicAuth class
 
 from typing import List, TypeVar
 from flask import request
-from auth import Auth
+from .auth import Auth
 from base64 import b64encode
 
 
