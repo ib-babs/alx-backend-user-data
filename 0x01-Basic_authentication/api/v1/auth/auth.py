@@ -29,8 +29,9 @@ class Auth:
     def authorization_header(self, request=None) -> str:
         '''Checking authorization header existence.
         if `request` is None, then no request to the route link has been made.
-        Or if the header is not exist in the request made to access the resource
-        from the route link requested then 401 (Unauthorized) http status code is raised'''
+        Or if the header is not exist in the request made to access
+        the resource from the route link requested then
+        401 (Unauthorized) http status code is raised'''
         if request is None:
             return None
         if request.headers.get('Authorization') is None:

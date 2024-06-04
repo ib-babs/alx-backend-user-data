@@ -12,7 +12,8 @@ from base64 import b64encode
 class BasicAuth(Auth):
     '''Auth subclass - Basic Authentication'''
 
-    def extract_base64_authorization_header(self, authorization_header: str) -> str:
+    def extract_base64_authorization_header(self,
+                                            authorization_header: str) -> str:
         '''Extraction of base64 authorization header'''
         if (not authorization_header or
             type(authorization_header) != str or
