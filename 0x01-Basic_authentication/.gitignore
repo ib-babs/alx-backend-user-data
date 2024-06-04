@@ -2,4 +2,4 @@ basic_auth
 __pycache__
 api/__pycache__
 api/v1/__pycache__
-main
+main.py
