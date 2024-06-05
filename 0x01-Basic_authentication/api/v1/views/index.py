@@ -35,5 +35,5 @@ def unauthorized() -> NoReturn:
 
 @app_views.route('/forbidden')
 def forbidden() -> NoReturn:
-    '''Unauthorized'''
+    '''Forbidden'''
     abort(403)
