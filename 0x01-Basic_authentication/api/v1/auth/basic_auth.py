@@ -67,7 +67,8 @@ class BasicAuth(Auth):
         '''Get current user
         Arg:
             `request`: request object
-        Returns: `current user object` or `None` if any of the validations fails.'''
+        Returns: `current user object` or `None` if any of the
+        validations fails.'''
         header = self.authorization_header(request)
         extract_b64_header = self.extract_base64_authorization_header(header)
         decode_b64_header = self.decode_base64_authorization_header(
