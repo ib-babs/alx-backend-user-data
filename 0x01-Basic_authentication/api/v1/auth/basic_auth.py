@@ -5,6 +5,8 @@ BasicAuth class
 
 from typing import List, TypeVar
 from flask import request
+
+from models.user import User
 from .auth import Auth
 from base64 import b64encode, b64decode
 
@@ -36,8 +38,41 @@ class BasicAuth(Auth):
     def extract_user_credentials(self,
                                  decoded_base64_authorization_header:
                                      str) -> (str, str):  # type: ignore
-        '''Extracting user credential'''
+        '''Extracting user credential through decoded_base64
+        auth string header'''
         if (not decoded_base64_authorization_header or
-                type(decoded_base64_authorization_header) != str
-                or decoded_base64_authorization_header):
+                type(decoded_base64_authorization_header) != str or
+                ":" not in decoded_base64_authorization_header):
             return None, None
+        return tuple(decoded_base64_authorization_header.split(':', 1))
+
+    def user_object_from_credentials(self, user_email: str, user_pwd: str)\
+            -> TypeVar('User'):  # type: ignore
+        '''Get user_object credential through email and password validation'''
+        if ((not user_email or type(user_email) != str) or
+                (not user_pwd or type(user_pwd) != str)):
+            return None
+        user_obj = User.search()
+        new_obj = None
+        if not user_obj:
+            return None
+        for user in user_obj:
+            if user_email == user.email:
+                new_obj = user
+                break
+        return new_obj if new_obj and\
+            new_obj.is_valid_password(user_pwd) else None
+
+    def current_user(self, request=None) -> TypeVar('User'):  # type: ignore
+        '''Get current user
+        Arg:
+            `request`: request object
+        Returns: `current user object` or `None` if any of the validations fails.'''
+        header = self.authorization_header(request)
+        extract_b64_header = self.extract_base64_authorization_header(header)
+        decode_b64_header = self.decode_base64_authorization_header(
+            extract_b64_header)
+        extract_credential = self.extract_user_credentials(decode_b64_header)
+        extract_user_obj = self.user_object_from_credentials(
+            *extract_credential)
+        return extract_user_obj

@@ -19,6 +19,14 @@ class Auth:
         if path is None or excluded_paths is None or excluded_paths == []:
             return True
 
+        # Checking excluded_paths string that ends with `*` to
+        # match all paths that start with such string until `*`.
+        # Simply, wildcard
+        for xc_path in excluded_paths:
+            if xc_path.endswith('*'):
+                if path.startswith(xc_path.replace('*', '')):
+                    return False
+
         slash_resistant = path + '/'
         # Confirming  path  existence
         if path in excluded_paths or slash_resistant in excluded_paths:
