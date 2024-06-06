@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+'''Session Auth'''
 from os import getenv
 from flask import jsonify, request, abort
 from models.user import User
