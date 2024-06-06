@@ -11,7 +11,7 @@ class SessionDBAuth(SessionExpAuth):
     def create_session(self, user_id=None):
         '''creates and stores new instance of UserSession and\
             returns the Session ID'''
-        if not user_id:
+        if not user_id or type(user_id) != str:
             return None
         usersession = UserSession(user_id=user_id)
         usersession.save()
@@ -20,7 +20,7 @@ class SessionDBAuth(SessionExpAuth):
     def user_id_for_session_id(self, session_id=None):
         '''Returns the User ID by requesting UserSession in the\
             database based on session_id'''
-        if not session_id:
+        if not session_id or type(session_id) != str:
             return None
         user_session = UserSession(session_id=session_id)
         if session_id in user_session.session_id:
