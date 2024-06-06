@@ -13,14 +13,15 @@ app = Flask(__name__)
 app.register_blueprint(app_views)
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 auth = None
-if os.getenv('AUTH_TYPE') == 'basic_auth':
+AUTH_TYPE = os.getenv('AUTH_TYPE')
+if AUTH_TYPE == 'basic_auth':
     from api.v1.auth.basic_auth import BasicAuth
     auth = BasicAuth()
-if os.getenv('AUTH_TYPE') == 'session_auth':
+if AUTH_TYPE == 'session_auth':
     from api.v1.auth.session_auth import SessionAuth
     auth = SessionAuth()
-if os.getenv('AUTH_TYPE') != 'basic_auth' and\
-        os.getenv('AUTH_TYPE') != 'session_auth':
+if AUTH_TYPE != 'basic_auth' and\
+        AUTH_TYPE != 'session_auth':
     from api.v1.auth.auth import Auth
     auth = Auth()
 
@@ -45,7 +46,7 @@ def before_request():
     if not auth.current_user(request=request):
         abort(403)
     # Check the existence of authorized_header and session cookie
-    if not auth.authorization_header(request=request) and \
+    if not auth.authorization_header(request) and \
             not auth.session_cookie(request):
         abort(401)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from os import getenv
-from flask import jsonify, request
+from flask import jsonify, request, abort
 from models.user import User
 from api.v1.views import app_views
 
@@ -27,11 +27,22 @@ def auth_session_login():
         return jsonify({"error": "no user found for this email"}), 404
     if not new_obj.is_valid_password(password):
         return jsonify({"error": "wrong password"}), 401
+
     from api.v1.app import auth
     session_id = auth.create_session(new_obj.id)
     response = jsonify(new_obj.to_json())
-    print(session_id)
+    # print(session_id)
     session_name = getenv('SESSION_NAME')
-    if session_name:
-        response.set_cookie(session_name, session_id)
+    response.set_cookie(session_name, session_id)
     return response
+
+
+@app_views.route('/auth_session/logout', methods=['DELETE'])
+@app_views.route('/auth_session/logout/', methods=['DELETE'])
+def logout():
+    '''Logout with session_ID'''
+    from api.v1.app import auth
+    destroy_ses = auth.destroy_session(request)
+    if not destroy_ses:
+        abort(404)
+    return jsonify({}), 200
