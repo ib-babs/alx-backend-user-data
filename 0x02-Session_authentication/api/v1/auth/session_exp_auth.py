@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+'''Session Expiration Authentication get sessionID
+expired upon time elapsed'''
 from datetime import datetime, timedelta
 from os import getenv
 from .session_auth import SessionAuth
@@ -8,6 +10,7 @@ class SessionExpAuth(SessionAuth):
     '''Session Expire Authentication'''
 
     def __init__(self) -> None:
+        '''Initialization'''
         duration = getenv('SESSION_DURATION')
         self.session_duration = int(duration) \
             if duration else 0
