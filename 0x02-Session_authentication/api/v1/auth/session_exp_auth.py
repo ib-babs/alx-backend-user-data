@@ -16,6 +16,7 @@ class SessionExpAuth(SessionAuth):
             if duration else 0
 
     def create_session(self, user_id=None):
+        '''Create session'''
         sID = super().create_session(user_id)
         if not sID:
             return None
@@ -26,6 +27,7 @@ class SessionExpAuth(SessionAuth):
         return sID
 
     def user_id_for_session_id(self, session_id=None):
+        '''User ID for session ID'''
         # uID_for_sID = super().user_id_for_session_id(session_id)
         if not session_id or \
                 session_id not in self.user_id_by_session_id:
