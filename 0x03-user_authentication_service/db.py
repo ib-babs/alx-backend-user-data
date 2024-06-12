@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """DB module - contains database class
 which is responsible for collecting and store data
 """

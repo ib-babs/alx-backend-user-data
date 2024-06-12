@@ -5,8 +5,8 @@ Main flask application
 from flask import Flask, abort, jsonify, redirect, request, url_for
 from auth import Auth, _hash_password
 
-app = Flask(__name__)
 AUTH = Auth()
+app = Flask(__name__)
 
 
 @app.route('/')
@@ -19,12 +19,14 @@ def index():
 def users():
     '''Create new user'''
     email = request.form.get('email')
+    if not email:
+        return jsonify({'message': 'email is missing.'}), 401
     password = request.form.get('password')
-    user_exists = Auth.get_user(AUTH, 'email', email)
-    if user_exists:
+    try:
+        AUTH.register_user(email, password)
+        return jsonify({"email": email, "message": "user created"})
+    except ValueError:
         return jsonify({"message": "email already registered"}), 400
-    AUTH._db.add_user(email, _hash_password(password))
-    return jsonify({"email": email, "message": "user created"})
 
 
 @app.post('/sessions')
@@ -33,6 +35,11 @@ def login():
     email = request.form.get('email')
     password = request.form.get('password')
     user = AUTH.valid_login(email, password)
+    if not email:
+        return jsonify({'message': 'email is missing.'}), 401
+    if not password:
+        return jsonify({'message': 'password is missing.'}), 401
+
     if not user:
         abort(401)
     sessionID = AUTH.create_session(email)
@@ -45,7 +52,7 @@ def login():
 def logout():
     sessionID = request.cookies.get('session_id')
     if not sessionID:
-        abort(403)
+        return jsonify({'message': 'sessionID is missing.'}), 401
     user_obj = Auth.get_user(AUTH, 'session_id', sessionID)
     if not user_obj:
         abort(403)
@@ -56,8 +63,8 @@ def logout():
 @app.get('/profile')
 def profile():
     sessionID = request.cookies.get('session_id')
-    if not sessionID or type(sessionID) != str:
-        abort(403)
+    if not sessionID:
+        return jsonify({'message': 'sessionID is missing.'}), 401
     user_obj = Auth.get_user(AUTH, 'session_id', sessionID)
     if user_obj:
         return jsonify({'email': user_obj.email}), 200
@@ -68,6 +75,8 @@ def profile():
 def get_reset_password_token():
     '''Get reset token'''
     email = request.form.get('email')
+    if not email:
+        return jsonify({'message': 'email is missing.'}), 401
     user_obj = Auth.get_user(AUTH, 'email', email)
     if not user_obj:
         abort(403)
