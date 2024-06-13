@@ -36,44 +36,36 @@ class DB:
     def add_user(self, email: str, hashed_password: str) ->\
             Union[User, None]:
         '''Add a new user to the database'''
-        new_user = User(email=email, hashed_password=hashed_password)
-        try:
+        if email and hashed_password:
+            new_user = User(**{'email': email,
+                            'hashed_password': hashed_password})
             self._session.add(new_user)
             self._session.commit()
-        except Exception as e:
-            print(f"Error adding user to database: {e}")
-            self._session.rollback()
-            raise
-        return new_user
+            return new_user
 
     def find_user_by(self, **kwargs: Dict[str, str]) -> User:
         '''Returns the first row found in the users table as filtered by
         the method input arguments.
         '''
-        try:
-            user = self._session.query(User).filter_by(**kwargs).one()
-        except NoResultFound:
-            raise NoResultFound()
-        except InvalidRequestError:
-            raise InvalidRequestError()
-        return user
+        if kwargs:
+            key = list(kwargs.keys())[0]
+            if not hasattr(User, key):
+                raise InvalidRequestError
+            res = self._session.query(User).filter(
+                getattr(User, key) == kwargs[key]).first()
+            if not res:
+                raise NoResultFound
+            return res
 
     def update_user(self, user_id: int, **kwargs: Dict[str, str]) -> None:
         '''Update user account'''
-        try:
-            # Find the user with the given user ID
-            user = self.find_user_by(id=user_id)
-        except NoResultFound:
-            raise ValueError("User with id {} not found".format(user_id))
-
-        for k, v in kwargs.items():
-            if not hasattr(User, k):
-                raise ValueError("User with id {} not found".format(k))
-            else:
-                setattr(user, k, v)
-        try:
-            # Commit changes to the database
+        if not user_id or not kwargs:
+            return
+        user_retrieved = self.find_user_by(**{'id': user_id})
+        if user_retrieved:
+            for k, v in kwargs.items():
+                if not hasattr(User, k):
+                    raise ValueError()
+                else:
+                    setattr(user_retrieved, k, v)
             self._session.commit()
-        except InvalidRequestError:
-            # Raise error if an invalid request is made
-            raise ValueError("Invalid request")
