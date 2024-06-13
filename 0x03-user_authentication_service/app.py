@@ -3,7 +3,7 @@
 Main flask application
 """
 from flask import Flask, abort, jsonify, redirect, request, url_for
-from auth import Auth, _hash_password
+from auth import Auth
 
 AUTH = Auth()
 app = Flask(__name__)

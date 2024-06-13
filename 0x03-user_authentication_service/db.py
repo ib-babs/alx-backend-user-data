@@ -7,7 +7,7 @@ from sqlalchemy.exc import NoResultFound, InvalidRequestError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
-from typing import Union
+from typing import Dict, Union
 from user import Base, User
 
 
@@ -36,36 +36,44 @@ class DB:
     def add_user(self, email: str, hashed_password: str) ->\
             Union[User, None]:
         '''Add a new user to the database'''
-        if email and hashed_password:
-            new_user = User(**{'email': email,
-                            'hashed_password': hashed_password})
+        new_user = User(email=email, hashed_password=hashed_password)
+        try:
             self._session.add(new_user)
             self._session.commit()
-            return new_user
+        except Exception as e:
+            print(f"Error adding user to database: {e}")
+            self._session.rollback()
+            raise
+        return new_user
 
-    def find_user_by(self, **kwargs) -> User:
+    def find_user_by(self, **kwargs: Dict[str, str]) -> User:
         '''Returns the first row found in the users table as filtered by
         the method input arguments.
         '''
-        if kwargs:
-            key = list(kwargs.keys())[0]
-            if not hasattr(User, key):
-                raise InvalidRequestError
-            res = self._session.query(User).filter(
-                getattr(User, key) == kwargs[key]).first()
-            if not res:
-                raise NoResultFound
-            return res
+        try:
+            user = self._session.query(User).filter_by(**kwargs).one()
+        except NoResultFound:
+            raise NoResultFound()
+        except InvalidRequestError:
+            raise InvalidRequestError()
+        return user
 
-    def update_user(self, user_id: int, **kwargs) -> None:
+    def update_user(self, user_id: int, **kwargs: Dict[str, str]) -> None:
         '''Update user account'''
-        if not user_id or not kwargs:
-            return
-        user_retrieved = self.find_user_by(**{'id': user_id})
-        if user_retrieved:
-            for k, v in kwargs.items():
-                if not hasattr(User, k):
-                    raise ValueError()
-                else:
-                    setattr(user_retrieved, k, v)
+        try:
+            # Find the user with the given user ID
+            user = self.find_user_by(id=user_id)
+        except NoResultFound:
+            raise ValueError("User with id {} not found".format(user_id))
+
+        for k, v in kwargs.items():
+            if not hasattr(User, k):
+                raise ValueError("User with id {} not found".format(k))
+            else:
+                setattr(user, k, v)
+        try:
+            # Commit changes to the database
             self._session.commit()
+        except InvalidRequestError:
+            # Raise error if an invalid request is made
+            raise ValueError("Invalid request")
