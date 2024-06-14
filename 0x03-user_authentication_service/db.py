@@ -37,10 +37,13 @@ class DB:
     def add_user(self, email: str, hashed_password: str) -> User:
         '''Add a new user to the database'''
         new_user = User(**{'email': email,
-                           'hashed_password':
-                               str(hashed_password).decode('utf-8')})
-        self._session.add(new_user)
-        self._session.commit()
+                           'hashed_password': hashed_password})
+        try:
+            self._session.add(new_user)
+            self._session.commit()
+        except InvalidRequestError:
+            self._session.rollback()
+            raise
         return new_user
 
     def find_user_by(self, **kwargs: Dict[str, str]) -> User:
