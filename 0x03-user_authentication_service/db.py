@@ -3,8 +3,6 @@
 which is responsible for collecting and store data
 """
 from sqlalchemy import create_engine
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
@@ -48,6 +46,8 @@ class DB:
         '''Returns the first row found in the users table as filtered by
         the method input arguments.
         '''
+        from sqlalchemy.orm.exc import NoResultFound
+        from sqlalchemy.exc import InvalidRequestError
         if kwargs:
             key = list(kwargs.keys())[0]
             if not hasattr(User, key):
