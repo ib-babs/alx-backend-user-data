@@ -36,12 +36,11 @@ class DB:
 
     def add_user(self, email: str, hashed_password: str) -> User:
         '''Add a new user to the database'''
-        if email and hashed_password:
-            new_user = User(**{'email': email,
-                            'hashed_password': hashed_password})
-            self._session.add(new_user)
-            self._session.commit()
-            return new_user
+        new_user = User(**{'email': email,
+                           'hashed_password': hashed_password})
+        self._session.add(new_user)
+        self._session.commit()
+        return new_user
 
     def find_user_by(self, **kwargs: Dict[str, str]) -> User:
         '''Returns the first row found in the users table as filtered by
